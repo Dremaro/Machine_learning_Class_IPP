@@ -171,7 +171,8 @@ for epoch in range(0,n_epochs): # n_epochs is the number of training iterations
       print(f"y_predict : {y_predict}")
       print(f"labels : {labels}")
       # 2. Compute the loss :
-      # y_predict = torch.argmax(y_predict, dim=1).float() # TODO : this is where it blocks
+      # y_predict = torch.argmax(y_predict, dim=1).float() 
+      
       loss = criterion(y_predict, labels)  # computes the loss between the predicted and actual labels. And then do the sum I guess
       print(f"loss : {loss}")
       # 3. Reset gradients to 0 : optimizer = optim.Adam(model.parameters(), lr = learning_rate)
