@@ -50,6 +50,12 @@ n_images_train = 200 # max 18998
 n_images_test = 50 # max 6333
 desired_size = (512, 384) # The dimensions of the images in the dataset
 
+l = os.listdir('Train\Mask')  # 1945
+print(len(l))
+l_test = os.listdir('Test\Mask')  # 648
+print(len(l_test))
+
+
 ### Importer les données d'entrainement et les données de test
 X_train = [] # Create an empty list to store the images
 X_test = [] # Create an empty list to store the images
@@ -124,7 +130,6 @@ mon_model.add_module('relue2', nn.ReLU())
 mon_model.add_module('3rd_linear_layer', nn.Linear(n_2l,n_3l))
 mon_model.add_module('relue', nn.ReLU())
 mon_model.add_module('final_linear_layer', nn.Linear(n_3l,n_out))
-# mon_model.add_module('softmax', nn.Softmax(dim=1))
 mon_model = mon_model.to(device)
 
 learning_rate = 0.01

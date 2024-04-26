@@ -50,7 +50,7 @@ def test_mnist_images(model,testset):
       plt.title(str(int(model_prediction)))
 
 class CustomImageDataset(torch.utils.data.Dataset):
-    def __init__(self, img_dir, labels_csv, transform=None, n_elements=None):
+    def __init__(self, img_dir, labels_csv, transform=None, Masks=False, n_elements=None):
         self.img_dir = img_dir
         self.labels_df = pd.read_csv(labels_csv)
         if n_elements is not None:
@@ -60,7 +60,7 @@ class CustomImageDataset(torch.utils.data.Dataset):
     def __len__(self):
         return len(self.labels_df)
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx): # permet d'accéder à une image/class en particulier du dataset
         img_path = os.path.join(self.img_dir, self.labels_df.iloc[idx, 0]+".jpg")
         image = Image.open(img_path).convert('RGB')
         # label = self.labels_df.iloc[idx, 'CLASS']
@@ -69,8 +69,14 @@ class CustomImageDataset(torch.utils.data.Dataset):
             image = self.transform(image)
         return image, label
 
+
 ####################### MAIN #################################################
 ##############################################################################
+
+l = os.listdir('Train\Mask')  # 1945
+print(len(l))
+l_test = os.listdir('Test\Mask')  # 648
+print(len(l_test))
 
 # Define a transform to normalize the data
 transform = transforms.Compose([
@@ -91,7 +97,7 @@ print(f"test set length: {len(testset)}")
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(device)
 
-n_hidden_1 = 700 # 1st layer number of neurons
+n_hidden_1 = 500 # 1st layer number of neurons
 n_hidden_2 = 500 # 2nd layer number of neurons
 n_hidden_3 = 200 # 3rd layer number of neurons
 
