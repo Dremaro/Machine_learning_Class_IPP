@@ -69,7 +69,24 @@ class CustomImageDataset(torch.utils.data.Dataset):
             image = self.transform(image)
         return image, label
 
+class ConvNet(nn.Module):
+    def __init__(self):
+        super(ConvNet, self).__init__()
+        self.conv1 = nn.Conv2d(3, 6, 5)  # 3 input image channel, 6 output channels, 5x5 square convolution
+        self.pool = nn.MaxPool2d(2, 2)  # Max pooling over a (2, 2) window
+        self.conv2 = nn.Conv2d(6, 16, 5)  # 6 input image channel, 16 output channels, 5x5 square convolution
+        self.fc1 = nn.Linear(16 * 125 * 92, 120)  # an affine operation: y = Wx + b, 125 and 92 need to be calculated based on your input image size and the conv/pool layers
+        self.fc2 = nn.Linear(120, 84)
+        self.fc3 = nn.Linear(84, 8)
 
+    def forward(self, x):
+        x = self.pool(F.relu(self.conv1(x)))
+        x = self.pool(F.relu(self.conv2(x)))
+        x = x.view(-1, 16 * 125 * 92)  # Flatten layer
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        x = self.fc3(x)
+        return x
 ####################### MAIN #################################################
 ##############################################################################
 
@@ -83,19 +100,16 @@ transform = transforms.Compose([
     transforms.Resize((512, 384)),  # Resize images to match image size
     transforms.ToTensor(),          # Convert to tensor
     transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),  # Normalize for each color channel
-    lambda x: x.view(-1),           # Flatten image
+    #lambda x: x.view(-1),           # Flatten image
     lambda x: x.float()             # Convert to float
 ])
 
 # Load the training and test datasets
 trainset = CustomImageDataset(img_dir=r'Train\Train', labels_csv='metadataTrain.csv', transform=transform, n_elements=600)
 testset = CustomImageDataset(img_dir=r'Test\Test', labels_csv='SampleSubmission.csv', transform=transform, n_elements=100)
-image, label = trainset[0]
-print(f"train set length: {len(trainset)}")
-print(f"test set length: {len(testset)}")
-
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(device)
+
 
 n_hidden_1 = 500 # 1st layer number of neurons
 n_hidden_2 = 500 # 2nd layer number of neurons
@@ -116,6 +130,8 @@ model_multi_layer = nn.Sequential(
 )
 
 model_multi_layer = model_multi_layer.to(device)
+
+model_multi_layer = ConvNet().to(device)
 
 learning_rate = 0.01
 n_epochs = 20
@@ -180,7 +196,7 @@ all_labels = []
 with tqdm(test_loader, unit="batch") as tepoch:
   for data, labels in tepoch:
     all_labels.extend(labels.tolist())
-    
+
     data = data.to(device)
     y_predict = model_multi_layer(data)
     all_predicted.extend(vector_to_class(y_predict).tolist())
